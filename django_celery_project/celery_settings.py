@@ -31,16 +31,31 @@ CELERY_RESULT_SERIALIZER = 'json'
 # 接收的数据类型
 CELERY_ACCEPT_CONTENT = ['json']
 
-# 设置默认的队列default
-CELERY_TASK_DEFAULT_QUEU = "celery"
+# 默认的队列，这个只有标识作用
+CELERY_TASK_DEFAULT_QUEUE = 'celery'
 
-# 定义队列
+# 定义队列规则，主要是给apply_async函数，调用任务的时候使用
 CELERY_TASK_QUEUES = {
-    Queue("celery", Exchange("celery"), routing_key="celery"),
+    Queue("celery", Exchange("celery"), routing_key="celery.default"),  # 默认队列
+    Queue("feed_tasks", Exchange(name="default", type='topic'), routing_key="task.#"),
+    # 定义队列feed_tasks,从交换接口:default接收，并且过滤路由的key,主要演示手动路由的机制
     Queue("add_queue", Exchange("compute_node"), routing_key="add_task"),  # 定义队列:add_queue,绑定交换机:compute_node
     Queue("mul_queue", Exchange("compute_node"), routing_key="mul_task"),  # 定义队列:mul_queue,绑定交换机:compute_node
     Queue("xsum_queue", Exchange("compute_node"), routing_key="xsum_task")  # 定义队列:xsum_queue,绑定交换机:compute_node
 }
+
+# 定义自动路由规则，主要是给delay函数，调用任务的时候使用，【元组方式定义】，顺序匹配执行
+# 参考官方文档：https://docs.celeryproject.org/en/stable/userguide/routing.html#exchange-types
+# CELERY_TASK_ROUTES = ([
+#                           ('app01.tasks.*', {"queue": "app01"}),
+#                           ('app_log.tasks.*', {"queue": "app_log"}),
+#                       ],)
+
+# # 定义自动路由规则，主要是给delay函数，调用任务的时候使用，【字典方式定义】
+# CELERY_TASK_ROUTES = {
+#     'app01.tasks.*': {"queue": "app01"},
+#     'app_log.tasks.*': {"queue": "app_log"}
+# }
 
 # 配置定时周期的任务
 # 参考官方文档：https://docs.celeryproject.org/en/stable/userguide/periodic-tasks.html#available-fields
@@ -58,9 +73,3 @@ CELERY_BEAT_SCHEDULE = {
         'args': (16, [1, 2, 3])
     },
 }
-
-# 定义路由
-# CELERY_ROUTES = {
-#     'tasks.add.taskA': {"queue": "for_add_task_A", "routing_key": "for_task_A"},
-#     'tasks.mul.taskB': {"queue": "for_mul_task_B", "routing_key": "for_task_B"}
-# }

@@ -18,12 +18,16 @@ Including another URLconf
 from django.urls import path
 
 from app01 import views
+from app_log import views as log_views
 
 urlpatterns = [
-    path('async_add/', views.async_add_task),
-    path('async_mul/', views.async_mul_task),
-    path('async_xsum/', views.async_xsum_task),
-    path('sync_add/', views.sync_add_task),
-    path('sync_mul/', views.sync_mul_task),
-    path('sync_xsum/', views.sync_xsum_task),
+    path('async_add/', views.async_add_task),  # 主演示指定exchange+queue+routing key,来任务调用,函数传普通参数
+    path('sync_add/', views.sync_add_task),  # 主演示,直接任务调用,函数传普通参数
+    path('sync_add/', views.sync_add_task),  # 主演示,直接任务调用,函数传普通参数
+    path('async_xsum/', views.async_xsum_task),  # 主演示,直接任务调用,函数传列表参数
+    path('sync_xsum/', views.sync_xsum_task),  # 主演示,直接任务调用,函数传列表参数
+    path('app01/async_add/', views.async_route_add_task),  # app01,主要演示手动路由
+    path('app01/sync_add/', views.sync_route_add_task),  # app01,主要演示自动路由
+    path('app_log/async_log/', log_views.async_route_handler_log),  # app_log,主要演示手动路由
+    path('app_log/sync_log/', log_views.sync_route_handler_log),  # app_log,主要演示自动路由
 ]

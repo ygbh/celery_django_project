@@ -98,3 +98,33 @@ def sync_xsum_task(request):
 
     task_status = AsyncResult(result.task_id, app=result.app)
     return JsonResponse({'input_args': number_list, 'task_id': result.task_id, 'result': task_status.get()})
+
+
+def async_route_add_task(request):
+    """
+      使用调用apply_async，相乘的任务,主要演示路由分发
+    :param request:
+    :return:
+    """
+    arg1 = 1
+    arg2 = 2
+    result = add.apply_async(args=(arg1, arg2,),
+                             queue='feed_tasks',
+                             routing_key='task.add',
+                             priority=0,
+                             exchange='default', )
+    task_status = AsyncResult(result.task_id, app=result.app)
+    return JsonResponse({'input_args': [arg1, arg2], 'task_id': result.task_id, 'result': task_status.get()})
+
+
+def sync_route_add_task(request):
+    """
+        使用delay，调用相乘的任务，主要演示路由分发
+    :param request:
+    :return:
+    """
+    arg1 = 1
+    arg2 = 2
+    result = add.delay(arg1, arg2)
+    task_status = AsyncResult(result.task_id, app=result.app)
+    return JsonResponse({'input_args': [arg1, arg2], 'task_id': result.task_id, 'result': task_status.get()})
